@@ -26,8 +26,8 @@ export class dataSocketService extends Socket {
     });
   }
 
-  override connect() {
-    const conn = super.connect();
+  override async connect() {
+    const conn = await super.connect();
     console.log('connect', conn);
   }
 

@@ -17,7 +17,7 @@ export const userIsLogged = signal<boolean>(false);
 export const userLogged = signal<User>(unknowUser);
 export const userTopMenu = signal<iTopMenu[]>([]);
 export const userVMenu = signal<iTopMenu[]>([]);
-
+export const token$S = signal<string | null>(null);
 
 @Injectable({
   providedIn: 'root'
@@ -205,6 +205,7 @@ export class UsersService {
   }
   getToken(): string | null{
     const token = localStorage.getItem('token');
+    token$S.set(token);
     return token;
   }
   resetPassword(data: object): Observable<boolean> {

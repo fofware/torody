@@ -1,10 +1,36 @@
-<p>dashboard works!</p>
+<p>WhatsApp dashboard works!</p>
 <button (click)="sktConnect()">Conecta WhatsApp</button>
 <button (click)="sktDisConnect()">Desconecta WhatsApp</button>
 <button (click)="sktSendmsg()">Ping</button>
 <button (click)="sktSendmsgAll()">Brodcastin Ping</button>
+<button (click)="sktRegister()">Register</button>
+<button (click)="sktGetChats()">Get Chats</button>
+<button (click)="sktGetContacts()">Get Contacts</button>
+<button (click)="sktWappClient('getState')">Get States</button>
 <br>
-<button (click)="apiConnect()">Conecta apiSocket</button>
-<button (click)="apiDisConnect()">Desconecta apiSocket</button>
-<button (click)="apiSendmsg()">Ping</button>
-<button (click)="apiSendmsgAll()">Brodcastin Ping</button>
+<button (click)="wsktConnect()">Conecta WWhatsApp</button>
+<button (click)="wsktDisConnect()">Desconecta WWhatsApp</button>
+<button (click)="wsktSendmsg()">Ping</button>
+<button (click)="wsktSendmsgAll()">Brodcastin Ping</button>
+<button (click)="wsktRegister()">Register WWhatsApp</button>
+<br>
+<ul>
+  <li *ngFor="let i of skt.numberList()">{{i.phone}} chats ({{chats()[i.phone].length}}) contactos ({{contacts()[i.phone].length}})</li>
+</ul>
+<!--select class="d-inline mx-2" [ngModel]="phoneSelected" (ngModelChange)="onChange($event)" name="deviceText">
+  <option [ngValue]="i" *ngFor="let i of skt.numberList()">{{i.phone}}</option>
+</select-->
+<input
+  type="text"
+  name="regnumero"
+  id="idregnumero"
+  (blur)="isRegistered()"
+  (ngModel)="regNumber">
+
+<div [hidden]="qr().length === 0">
+  <qrcode *ngIf="qr().length > 0" [qrdata]="qr()" [width]="500" [errorCorrectionLevel]="'M'"></qrcode>
+</div>
+<div [hidden]="wqr().length === 0">
+  <qrcode *ngIf="wqr().length > 0" [qrdata]="wqr()" [width]="500" [errorCorrectionLevel]="'M'"></qrcode>
+</div>
+

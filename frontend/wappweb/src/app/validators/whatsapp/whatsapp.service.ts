@@ -43,7 +43,7 @@ export interface WhatsApp {
   providedIn: 'root'
 })
 export class WhatsappService {
-  private WAPPURL = environment.WAP_API;
+  private WAPPURL = environment.W_API_URL;
   private AUTHURL = environment.AUTH_URL;
 
   _httpClient = inject(HttpClient);

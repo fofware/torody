@@ -1,0 +1,121 @@
+# Use root/example as user/password credentials
+version: '3.9'
+
+services:
+  nginx-proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    container_name: proxy-nginx
+    environment:
+      - DEFAULT_HOST=datasrv.local
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - conf:/etc/nginx/conf.d:ro
+      - vhost:/etc/nginx/vhost.d:ro
+      - html:/usr/share/nginx/html:ro
+      - certs:/etc/nginx/certs:ro
+      
+  dockergen:
+    image: jwilder/docker-gen
+    restart: unless-stopped
+    container_name: proxy-dockergen
+    command: -notify-sighup proxy-nginx -wait 5s:30s -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./templates:/etc/docker-gen/templates:rw # curl -o templates/nginx.tmpl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl
+      - conf:/etc/nginx/conf.d
+      - vhost:/etc/nginx/vhost.d:ro
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs:ro
+    environment:
+      - DEFAULT_HOST=hello.local
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    restart: unless-stopped
+    container_name: proxy-letsencrypt
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./templates:/etc/docker-gen/templates:ro
+      - conf:/etc/nginx/conf.d
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs
+    environment:
+      - DEFAULT_EMAIL=fofware@gmail.com
+      - NGINX_PROXY_CONTAINER=proxy-nginx
+      - NGINX_DOCKER_GEN_CONTAINER=proxy-dockergen
+
+  mongo:
+    image: mongo:6.1.0
+    command: --config /etc/mongo/mongod.conf
+    restart: always
+    #ports:
+    #  - 27017:27017
+    expose:
+      - 27017
+    #environment:
+    #  MONGO_INITDB_ROOT_USERNAME: fabian
+    #  MONGO_INITDB_ROOT_PASSWORD: tamara01
+
+    volumes:
+      - ./data/db:/data/db
+      - ./data/custom:/etc/mongo
+  mongo-express:
+    image: mongo-express:1.0.2
+    restart: always
+    ports:
+      - 8082:8081
+    environment:
+      #ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+      #ME_CONFIG_MONGODB_ADMINUSERNAME: fabian
+      #ME_CONFIG_MONGODB_ADMINPASSWORD: tamara01
+      ME_CONFIG_BASICAUTH_USERNAME: fabian
+      ME_CONFIG_BASICAUTH_PASSWORD: tamara
+      ME_CONFIG_MONGODB_URL: mongodb://mongo
+  
+  rwapi:
+    container_name: rwapi
+    restart: unless-stopped
+    build: ./wappgateway/.
+    expose:
+      - 4445
+    environment:
+      - VIRTUAL_PORT=4445
+      - VIRTUAL_HOST=rwapi.vta.ar
+      - LETSENCRYPT_HOST=rwapi.vta.ar
+      - LETSENCRYPT_EMAIL=fofware@gmail.com
+    volumes:
+      - ./wappgateway/:/usr/src/app
+      - ./wappgateway/data/wappdata/.wwebjs_auth:/usr/src/.wwebjs_auth
+      - ./wappgateway/data/wappdata/.wwebjs_cache:/usr/src/.wwebjs_cache
+      - ./wappgateway/data/wappdata/html:/usr/src/html
+      - ./wappgateway/data/wappdata/mediaReceive:/usr/src/mediaReceive
+      - ./wappgateway/data/wappdata/mediaSend:/usr/src/mediaReceive
+
+
+  
+  rody_vta_ar:
+    image: nginx:alpine
+    container_name: rody_vta_web
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=rody.vta.ar
+      - LETSENCRYPT_HOST=rody.vta.ar
+      - LETSENCRYPT_EMAIL=fofware@gmail.com
+    volumes:
+      - /data/projects/mimodeloA13/frontA16.3/system/dist/system/:/usr/share/nginx/html/
+      - ./sites/vta.conf:/etc/nginx/conf.d/vta.conf
+
+networks:
+  default:
+    name: rod_proxy
+    #driver: custom-driver-1
+
+volumes:
+  conf:
+  certs:
+  vhost:
+  html:

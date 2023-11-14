@@ -16,6 +16,5 @@ export const appConfig: ApplicationConfig = {
        ),
     provideAnimations(),
     provideHttpClient(withInterceptors([apiInterceptor,tokenInterceptor])),
-
   ]
 };

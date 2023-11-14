@@ -1,0 +1,8 @@
+node_modules
+dist
+mediaSend
+mediaReceive
+.wwebjs_auth
+.wwebjs_cache
+sessions
+core
